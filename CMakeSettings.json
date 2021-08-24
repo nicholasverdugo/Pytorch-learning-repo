@@ -1,0 +1,32 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "Torch_DIR",
+          "value": "C:/libtorch/share/cmake/Torch",
+          "type": "PATH"
+        },
+        {
+          "name": "CUDNN_INCLUDE_PATH",
+          "value": "C:/cuDNN/cuda/include",
+          "type": "PATH"
+        },
+        {
+          "name": "CUDNN_LIBRARY_PATH",
+          "value": "C:/cuDNN/cuda/lib/x64/cudnn.lib",
+          "type": "FILEPATH"
+        }
+      ]
+    }
+  ]
+}
