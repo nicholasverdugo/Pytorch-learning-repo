@@ -50,36 +50,35 @@ int main(int argc, const char* argv[]) {
     std::vector<torch::jit::IValue> inputs;
     //creates a placeholder tensor with the correct image size, and copies the image's data into it once it is created
     torch::Tensor placeholder(torch::zeros({ 1, 1, 1024, 1024 }));
-    std::cout << "memcpy 1" << std::endl;
-    std::memcpy(placeholder.data_ptr(), img.data, 1024 * 1024 * sizeof(unsigned char)); //problem is happening here - fixed it by changing from int to unsigned char
-    //inputs.push_back(torch::ones({ 1, 1, 1024, 1024 }));
-    std::cout << "Pushing back" << std::endl;
+
+    std::cout << "converting Mat to Tensor" << std::endl;
+    std::memcpy(placeholder.data_ptr(), img.data, 1024 * 1024 * sizeof(unsigned char));
+
     //add the placeholder's data (copied from Mat img) into the IValue vector named inputs
     inputs.push_back(placeholder);
 
 
     // Execute the model and turn its output into a tensor.
-    std::cout << "creating Tensor_output" << std::endl;
-    torch::Tensor output = module.forward(inputs).toTensor(); //changed from at::Tensor to torch::Tensor
-    //std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
-    std::cout << "Tensor Output Created" << std::endl;
-    //create an IValue vector to store the modified image data
-    std::vector<torch::jit::IValue> outputs;
+    std::cout << "forward passing..." << std::endl;
+    at::Tensor output = module.forward(inputs).toTensor(); //changed from at::Tensor to torch::Tensor
+    std::cout << "forward pass complete." << std::endl;
 
-    //add the modified image data to the vector
-    outputs.push_back(output);
+    //Converting the tensor to a Mat so it can be displayed with cv
+    //not sure if these next two lines are needed...final image weirdness might be due to the neural net. not sure though.
+    //std::cout << "switching rows and cols..." << std::endl;
+    //output = output.permute({2,3,1,0});
+    std::cout << "converting the outputted Tensor to a Mat to be displayed..." << std::endl;
+    cv::Mat out(1024, 1024, CV_32SC1, output.data_ptr());
 
-    //write the image data to a mat, so OpenCV can display  it
-    std::cout << "Reading Image Output" << std::endl;
-    cv::Mat out = imread(path, cv::IMREAD_GRAYSCALE);
+    //memcpy does not actually need to happen since Mat creation can take in a tensor data ptr, leaving this here for future reference though.
+    //std::memcpy(out.data, output.data_ptr(), output.numel() * sizeof(unsigned char));
 
-    std::cout << "memcpy 2" << std::endl;
-    std::memcpy(output.data_ptr(), out.data, 1024 * 1024 * sizeof(unsigned char) * output.numel());
     //Write the image to a file.
-    std::cout << "writing processed image" << std::endl;
+    std::cout << "writing processed image..." << std::endl;
     imwrite("image_processed.png", out);
     
-    std::cout << "displaying processed image" << std::endl;
     //Display the processed image
+    std::cout << "displaying processed image..." << std::endl;
     imshow("Processed Image", out);
+    k = cv::waitKey(0);
 }
